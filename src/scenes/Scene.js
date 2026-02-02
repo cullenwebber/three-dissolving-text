@@ -1,8 +1,10 @@
 import * as THREE from "three";
 import WebGLContext from "../core/WebGLContext";
-import ImportGltf from "../utils/ImportGltf";
-import { CameraRig } from "../utils/CameraRig";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import WebGLText from "../utils/WebGLText";
+import vertexShader from "../shaders/text.vert.glsl";
+import fragmentShader from "../shaders/text.frag.glsl";
+import gsap from "gsap";
 
 export default class Scene {
 	constructor() {
@@ -21,9 +23,8 @@ export default class Scene {
 		this.#setContext();
 		this.#setupScene();
 		this.#setupCamera();
-		this.#setupCameraRig();
-		this.#addLights();
 		await this.#addObjects();
+		this.#addAnimations();
 	}
 
 	#setContext() {
@@ -37,7 +38,7 @@ export default class Scene {
 		this.envMap = pmremGenerator.fromScene(environment).texture;
 		this.scene.environment = this.envMap;
 		this.scene.environmentIntensity = 1.0;
-		// this.scene.background = new THREE.Color(0x000000);
+		this.scene.background = new THREE.Color(0x000000);
 	}
 
 	#setupCamera() {
@@ -47,30 +48,31 @@ export default class Scene {
 		this.camera.position.y = -0.5;
 	}
 
-	#setupCameraRig() {
-		this.cameraRig = new CameraRig(this.camera, {
-			target: new THREE.Vector3(0, 0, 0),
-			xLimit: [-0.25, 0.25],
-			yLimit: [-0.75, -0.25],
-			damping: 1.65,
-		});
-	}
-
-	#addLights() {}
-
 	async #addObjects() {
-		new ImportGltf(`${import.meta.env.BASE_URL}__.glb`, {
-			onLoad: (model) => {
-				this.mesh = model;
-
-				this.mesh.traverse((children) => {
-					if (!children.isMesh) return;
-					children.material = material;
-				});
-
-				this.scene.add(model);
+		this.material = new THREE.ShaderMaterial({
+			vertexShader: vertexShader,
+			fragmentShader: fragmentShader,
+			uniforms: {
+				time: { value: 0.0 },
+				progress: { value: 0.0 },
 			},
 		});
+		this.text = new WebGLText("RESEARCH");
+		this.text.material = this.material;
+		this.scene.add(this.text);
+	}
+
+	#addAnimations() {
+		this.tl = gsap
+			.timeline({
+				yoyo: true,
+				repeat: -1,
+			})
+			.to(this.material.uniforms.progress, {
+				value: 1.0,
+				ease: "circ.out",
+				duration: 3,
+			});
 	}
 
 	#calculateAspectRatio() {
@@ -81,7 +83,7 @@ export default class Scene {
 	}
 
 	animate(delta, elapsed) {
-		this.cameraRig && this.cameraRig.update(delta);
+		this.material && (this.material.uniforms.time.value = elapsed);
 	}
 
 	onResize(width, height) {
