@@ -71,7 +71,7 @@ export default class Scene {
 			.to(this.material.uniforms.progress, {
 				value: 1.0,
 				ease: "circ.out",
-				duration: 3,
+				duration: 10,
 			});
 	}
 
