@@ -5,6 +5,7 @@ export default class WebGLText {
 		this.string = string;
 		this.options = options;
 		this.text = null;
+		this.maxWidth = 2.5;
 		this.font = `${import.meta.env.BASE_URL}mango.ttf`;
 		this.#init();
 
@@ -19,10 +20,10 @@ export default class WebGLText {
 		this.text = new Text();
 		this.text.text = this.string;
 		this.text.font = this.font;
-		this.text.fontSize = 3.0;
+		this.text.fontSize = Math.min(0.004 * window.innerWidth, this.maxWidth);
 		this.text.anchorX = "center";
-		this.text.anchorY = "baseline";
-		this.text.lineHeight = 0.75;
+		this.text.anchorY = "35%";
+		this.text.lineHeight = 1.0;
 		this.text.color = 0xffffff;
 		this.text.sync();
 	}

@@ -55,11 +55,24 @@ export default class Scene {
 			uniforms: {
 				time: { value: 0.0 },
 				progress: { value: 0.0 },
+				direction: { value: 1.0 },
 			},
 		});
-		this.text = new WebGLText("RESEARCH");
+		this.material2 = new THREE.ShaderMaterial({
+			vertexShader: vertexShader,
+			fragmentShader: fragmentShader,
+			uniforms: {
+				time: { value: 0.0 },
+				progress: { value: 1.0 },
+				direction: { value: -1.0 },
+			},
+		});
+		this.text = new WebGLText("CULLEN");
+		this.text2 = new WebGLText("WEBBER");
 		this.text.material = this.material;
+		this.text2.material = this.material2;
 		this.scene.add(this.text);
+		this.scene.add(this.text2);
 	}
 
 	#addAnimations() {
@@ -67,12 +80,21 @@ export default class Scene {
 			.timeline({
 				yoyo: true,
 				repeat: -1,
+				defaults: {
+					ease: "sine.inOut",
+					duration: 4,
+				},
 			})
 			.to(this.material.uniforms.progress, {
 				value: 1.0,
-				ease: "circ.out",
-				duration: 10,
-			});
+			})
+			.to(
+				this.material2.uniforms.progress,
+				{
+					value: 0.0,
+				},
+				"<=23%",
+			);
 	}
 
 	#calculateAspectRatio() {
